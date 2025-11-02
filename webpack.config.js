@@ -4,12 +4,6 @@ var webpack = require('webpack');
 
 // Add HMR for development environments only.
 var entry = ['./src/index.js'];
-if (process.env.NODE_ENV === 'dev') {
-  entry = [
-    'webpack-dev-server/client?http://localhost:3333',
-    'webpack/hot/only-dev-server'
-  ].concat(entry);
-}
 
 function getBuildTimestamp () {
   function pad2 (value) {
@@ -37,11 +31,6 @@ var plugins = [
     COMMIT_HASH: JSON.stringify(commitHash)
   }),
 ];
-if (process.env.NODE_ENV === 'production') {
-  plugins.push(new webpack.optimize.UglifyJsPlugin({
-    compress: {warnings: false}
-  }));
-}
 
 // dist/
 var filename = 'aframe-material.js';
@@ -51,26 +40,36 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 module.exports = {
-  devServer: {port: 3333},
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+  devServer: {
+    port: 3333,
+    hot: true,
+    static: {
+      directory: path.join(__dirname),
+      watch: true
+    }
+  },
   entry: entry,
-  devtool : 'sourcemap',
+  devtool : 'source-map',
   output: {
     path: path.join(__dirname, outPath),
     filename: filename,
     publicPath: '/dist/'
   },
   module: {
-    loaders: [
+    rules: [
       {
-        test: /\.js?$/,
+        test: /\.js$/,
         exclude: /(node_modules|bower_components)/,
-        loader: 'babel',
-        query: {
-          plugins: ['transform-class-properties'],
-          presets: ['es2015']
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
         }
       }
     ]
   },
   plugins: plugins
 };
+

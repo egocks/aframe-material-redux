@@ -1,7 +1,7 @@
 (()=>{
   if (!AFRAME) { return console.error('AFRAME is required!'); }
   if (!AFRAME.ASSETS_PATH) { AFRAME.ASSETS_PATH = "./assets"; }
-  require('aframe-rounded');
+  require('./rounded');
   require("./fade");
   //require("./alert"); @TODO ;)
   require("./keyboard");

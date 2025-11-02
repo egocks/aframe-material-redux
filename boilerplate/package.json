@@ -1,9 +1,8 @@
 {
   "name": "aframe-material-boilerplate",
   "description": "Boilerplate for aframe-material",
-  "version": "1.0.03",
+  "version": "1.0.04",
   "license": "MIT",
-  "repository": "etiennepinchon/aframe-rounded",
   "scripts": {
     "start": "budo --live --verbose --port 3000 --open"
   },
