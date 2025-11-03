@@ -91,7 +91,7 @@ AFRAME.registerComponent('input', {
     this.cursor.setAttribute('visible', true);
     this.blink();
     Event.emit(this.el, 'focus');
-    if (!noemit) { Event.emit(document.body, 'didfocusinput', this.el); }
+    // if (!noemit) { Event.emit(document.body, 'didfocusinput', this.el); }
   },
   blur: function(noemit) {
     if (!this.isFocused) { return; }

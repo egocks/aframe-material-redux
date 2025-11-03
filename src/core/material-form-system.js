@@ -11,7 +11,7 @@ AFRAME.registerSystem('material-form', {
     const sceneEl = this.sceneEl;
     const onSceneLoaded = () => {
       this.setupCameraRaycaster();
-      this.observeFormChildren();
+      this.log('Material-form system initialized');
     };
     if (sceneEl.hasLoaded) onSceneLoaded(); else sceneEl.addEventListener('loaded', onSceneLoaded);
   },
@@ -41,38 +41,6 @@ AFRAME.registerSystem('material-form', {
       }
     }
     camEl.setAttribute('raycaster', Object.assign({}, rc, {objects: newObjects, interval: this.data.interval}));
-    this.log('Camera raycaster objects =', camEl.getAttribute('raycaster').objects);
-  },
-
-  refreshRaycasters: function () {
-    const sceneEl = this.sceneEl;
-    const camEl = (sceneEl.camera && sceneEl.camera.el) || sceneEl.querySelector('a-camera');
-    if (camEl && camEl.components && camEl.components.raycaster && camEl.components.raycaster.refreshObjects) {
-      camEl.components.raycaster.refreshObjects();
-      this.log('Refreshed camera raycaster objects');
-    }
-  },
-
-  observeFormChildren: function () {
-    const sceneEl = this.sceneEl;
-    const update = () => this.refreshRaycasters();
-
-    // Initial hook for existing forms
-    sceneEl.querySelectorAll('a-form').forEach(formEl => {
-      formEl.addEventListener('child-attached', update);
-      formEl.addEventListener('child-detached', update);
-    });
-
-    // Observe future a-form additions
-    sceneEl.addEventListener('child-attached', (e) => {
-      if (!e.detail || !e.detail.el) return;
-      const el = e.detail.el;
-      if (el.tagName && el.tagName.toLowerCase() === 'a-form') {
-        el.addEventListener('child-attached', update);
-        el.addEventListener('child-detached', update);
-        this.log('Observed new a-form');
-        this.refreshRaycasters();
-      }
-    });
+    this.log('Camera raycaster configured with objects:', newObjects);
   }
 });

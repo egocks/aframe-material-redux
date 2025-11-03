@@ -733,9 +733,10 @@ AFRAME.registerComponent('textarea', {
     
     // Emit events for keyboard integration
     this.el.emit('focus', { target: this.el });
-    if (document && document.body) {
-      Event.emit(document.body, 'didfocusinput', this.el);
-    }
+    // Temporarily disabled to prevent keyboard from opening and causing freeze
+    // if (document && document.body) {
+    //   Event.emit(document.body, 'didfocusinput', this.el);
+    // }
     if (this.el.sceneEl) {
       this.el.sceneEl.emit('didfocustextarea', { target: this.el });
     }
