@@ -6,6 +6,7 @@
   //require("./alert"); @TODO ;)
   require("./keyboard");
   require("./input");
+  require("./textarea");
   require("./switch");
   require("./form");
   require("./radio");

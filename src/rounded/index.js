@@ -69,7 +69,7 @@ AFRAME.registerComponent('rounded', {
     if (this.data.bottomRightRadius != -1) { corners[3] = this.data.bottomRightRadius; }
 
     roundedRect( roundedRectShape, 0, 0, this.data.width, this.data.height, corners[0], corners[1], corners[2], corners[3] );
-    return new THREE.ShapeBufferGeometry( roundedRectShape );
+    return new THREE.ShapeGeometry( roundedRectShape );
   },
   pause: function () {},
   play: function () {}
