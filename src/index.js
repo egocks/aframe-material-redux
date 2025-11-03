@@ -4,6 +4,7 @@
   require('./rounded');
   require("./fade");
   //require("./alert"); @TODO ;)
+  require('./core/material-form-system');
   require("./keyboard");
   require("./input");
   require("./textarea");
