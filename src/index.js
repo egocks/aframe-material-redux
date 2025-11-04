@@ -1,5 +1,5 @@
 (()=>{
-  if (!AFRAME) { return console.error('AFRAME is required!'); }
+  if (typeof AFRAME === 'undefined') { console.error('AFRAME is required!'); return; }
   if (!AFRAME.ASSETS_PATH) { AFRAME.ASSETS_PATH = "./assets"; }
   require('./rounded');
   require("./fade");

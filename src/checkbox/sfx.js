@@ -9,9 +9,9 @@ const SFX = {
     parent.appendChild(el);
 
     el = document.createElement('a-sound');
-    el.setAttribute('key', 'aframeButtonClickDisabledSound');
+    el.setAttribute('key', 'aframeCheckboxClickDisabledSound');
     el.setAttribute('sfx', true);
-    el.setAttribute('src', '#aframeButtonClickDisabled');
+    el.setAttribute('src', '#aframeCheckboxClickDisabled');
     el.setAttribute('position', '0 2 5');
     parent.appendChild(el);
   },
@@ -24,7 +24,7 @@ const SFX = {
   },
 
   clickDisabled: function(parent) {
-    let el = parent.querySelector('[key=aframeButtonClickDisabledSound]');
+    let el = parent.querySelector('[key=aframeCheckboxClickDisabledSound]');
     if (!el) { return; }
     el.components.sound.stopSound();
     el.components.sound.playSound();

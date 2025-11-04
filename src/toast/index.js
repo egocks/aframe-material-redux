@@ -1,7 +1,7 @@
 const Utils = require('../utils');
 const Event = require('../core/event');
-const Assets = require('./assets');
-const SFX = require('./sfx');
+const AssetsRegistry = require('../core/assets-registry');
+const FormControlHelpers = require('../core/form-control-helpers');
 
 AFRAME.registerComponent('toast', {
   schema: {
@@ -20,11 +20,10 @@ AFRAME.registerComponent('toast', {
   init: function () {
     var that = this;
 
-    // Assets
-    Utils.preloadAssets( Assets );
-
-    // SFX
-    SFX.init(this.el);
+    // Ensure assets and system
+    AssetsRegistry.ensure(['toast', 'button']);
+    FormControlHelpers.initFormControl(this);
+    this.system = FormControlHelpers.getFormSystem(this);
 
     // CONFIG
     this.el.setAttribute("position", `10000 10000 10000`);
@@ -94,8 +93,7 @@ AFRAME.registerComponent('toast', {
     this.hideTimer = setTimeout(function() {
       that.hide();
     }, this.data.duration);
-
-    SFX.show(this.el);
+    if (this.system && this.system.playSound) this.system.playSound('toastShow');
   },
   hide: function() {
     let that = this;

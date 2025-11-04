@@ -1,7 +1,7 @@
 const Utils = require('../utils');
 const Event = require('../core/event');
-const Assets = require('./assets');
-const SFX = require('./sfx');
+const AssetsRegistry = require('../core/assets-registry');
+const FormControlHelpers = require('../core/form-control-helpers');
 
 AFRAME.registerComponent('switch', {
   schema: {
@@ -18,11 +18,10 @@ AFRAME.registerComponent('switch', {
   init: function () {
     var that = this;
 
-    // Assets
-    Utils.preloadAssets( Assets );
-
-    // SFX
-    SFX.init(this.el);
+    // Ensure assets and system
+    AssetsRegistry.ensure(['switch']);
+    FormControlHelpers.initFormControl(this);
+    this.system = FormControlHelpers.getFormSystem(this);
 
     // FILL
     this.el.fill = document.createElement('a-rounded');
@@ -48,16 +47,17 @@ AFRAME.registerComponent('switch', {
     this.el.shadow_el.setAttribute('src', '#aframeSwitchShadow');
     this.el.knob.appendChild(this.el.shadow_el);
 
-    this.el.addEventListener('click', function() {
-      if (this.components.switch.data.disabled) { return; }
-      this.setAttribute('enabled', !this.components.switch.data.enabled );
-      Event.emit(this, 'change', this.components.switch.data.enabled);
+    FormControlHelpers.bindEvent(this, this.el, 'click', function() {
+      if (this.data.disabled) { return; }
+      this.el.setAttribute('enabled', !this.data.enabled );
+      Event.emit(this.el, 'change', this.data.enabled);
     });
-    this.el.addEventListener('mousedown', function() {
-      if (this.components.switch.data.disabled) {
-        return SFX.clickDisabled(this);
+    FormControlHelpers.bindEvent(this, this.el, 'mousedown', function() {
+      if (this.data.disabled) {
+        if (this.system && this.system.playSound) this.system.playSound('switchClickDisabled');
+        return;
       }
-      SFX.click(this);
+      if (this.system && this.system.playSound) this.system.playSound('switchClick');
     });
 
     Object.defineProperty(this.el, 'enabled', {

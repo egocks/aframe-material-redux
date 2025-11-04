@@ -1,7 +1,7 @@
 const Utils = require('../utils');
 const Event = require('../core/event');
-const Assets = require('./assets');
-const SFX = require('./sfx');
+const AssetsRegistry = require('../core/assets-registry');
+const FormControlHelpers = require('../core/form-control-helpers');
 
 AFRAME.registerComponent('button', {
   schema: {
@@ -20,20 +20,21 @@ AFRAME.registerComponent('button', {
   init: function () {
     var that = this;
 
-    // Assets
-    Utils.preloadAssets( Assets );
-
-    // SFX
-    SFX.init(this.el);
+    // Ensure assets and system
+    AssetsRegistry.ensure(['button']);
+    FormControlHelpers.initFormControl(this);
+    this.system = FormControlHelpers.getFormSystem(this);
 
     this.wrapper = document.createElement('a-entity');
     this.wrapper.setAttribute('position', '0 0 0.01')
     this.el.appendChild(this.wrapper);
+    FormControlHelpers.trackChild(this, this.wrapper);
 
     this.shadow = document.createElement('a-image');
     this.shadow.setAttribute('height', 0.36*1.25);
     this.shadow.setAttribute('src', '#aframeButtonShadow');
     this.wrapper.appendChild(this.shadow);
+    FormControlHelpers.trackChild(this, this.shadow);
 
     // OUTLINE
     this.outline = document.createElement('a-rounded');
@@ -41,26 +42,29 @@ AFRAME.registerComponent('button', {
     this.outline.setAttribute('radius', 0.03);
     this.outline.setAttribute('position', `0 -${0.36/2} 0.01`);
     this.wrapper.appendChild(this.outline);
+    FormControlHelpers.trackChild(this, this.outline);
 
     // LABEL
     this.label = document.createElement('a-entity');
     this.outline.appendChild(this.label);
+    FormControlHelpers.trackChild(this, this.label);
 
     // EVENTS
-    this.el.addEventListener('click', function() {
-      if (this.components.button && this.components.button.data.disabled) { return; }
-      that.onClick();
+    FormControlHelpers.bindEvent(this, this.el, 'click', function() {
+      if (this.data.disabled) { return; }
+      this.onClick();
     });
-    this.el.addEventListener('mousedown', function() {
-      if (this.components.button && this.components.button.data.disabled) {
-        return SFX.clickDisabled(this);
+    FormControlHelpers.bindEvent(this, this.el, 'mousedown', function() {
+      if (this.data.disabled) {
+        if (this.system && this.system.playSound) this.system.playSound('buttonClickDisabled');
+        return;
       }
-      that.wrapper.setAttribute('position', `0 0 0.036`);
-      SFX.click(this);
+      this.wrapper.setAttribute('position', `0 0 0.036`);
+      if (this.system && this.system.playSound) this.system.playSound('buttonClick');
     });
-    this.el.addEventListener('mouseup', function() {
-      if (this.components.button && this.components.button.data.disabled) { return; }
-      that.wrapper.setAttribute('position', `0 0 0`);
+    FormControlHelpers.bindEvent(this, this.el, 'mouseup', function() {
+      if (this.data.disabled) { return; }
+      this.wrapper.setAttribute('position', `0 0 0`);
     });
 
     this.el.getWidth = this.getWidth.bind(this);
@@ -174,7 +178,10 @@ AFRAME.registerComponent('button', {
     }, 0);
   },
   tick: function () {},
-  remove: function () {},
+  remove: function () {
+    FormControlHelpers.unbindAllEvents(this);
+    FormControlHelpers.cleanupChildren(this);
+  },
   pause: function () {},
   play: function () {}
 });
