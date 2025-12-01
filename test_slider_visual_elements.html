@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+  <script src="src/core/event.js"></script>
+  <script src="src/core/form-control-helpers.js"></script>
+  <script src="src/utils.js"></script>
+  <script src="src/rounded/index.js"></script>
+  <script src="src/slider/index.js"></script>
+</head>
+<body>
+  <a-scene embedded style="height: 400px; width: 800px;">
+    <a-camera position="0 0 3"></a-camera>
+    
+    <!-- Test basic slider with default values -->
+    <a-slider position="0 1 0" value="25"></a-slider>
+    
+    <!-- Test slider with custom colors and sizes -->
+    <a-slider 
+      position="0 0 0" 
+      value="75"
+      width="2.5"
+      track-height="0.08"
+      thumb-radius="0.12"
+      track-color="#FF6B6B"
+      active-track-color="#4ECDC4"
+      thumb-color="#45B7D1"
+      focus-ring-color="#96CEB4">
+    </a-slider>
+    
+    <!-- Test slider with different range -->
+    <a-slider 
+      position="0 -1 0" 
+      min="0"
+      max="10"
+      step="0.5"
+      value="3.5"
+      track-color="#FFEAA7"
+      active-track-color="#FDCB6E"
+      thumb-color="#E17055">
+    </a-slider>
+  </a-scene>
+
+  <script>
+    // Test that visual elements are created
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        const sliders = document.querySelectorAll('a-slider');
+        sliders.forEach((slider, index) => {
+          console.log(`Slider ${index + 1}:`);
+          console.log('  Track:', slider.querySelector('a-rounded'));
+          console.log('  Active Track:', slider.querySelectorAll('a-rounded')[1]);
+          console.log('  Thumb:', slider.querySelector('a-circle'));
+          console.log('  Focus Ring:', slider.querySelector('a-ring'));
+          console.log('  Hitbox:', slider.querySelector('a-plane'));
+          console.log('  Marks Container:', slider.querySelector('a-entity'));
+        });
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
+</html>

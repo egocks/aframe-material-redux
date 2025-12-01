@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Slider Disabled/Readonly States Test</title>
+  <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+  <script src="dist/aframe-material-form-controls.js"></script>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+    .controls {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      z-index: 1000;
+    }
+    .controls button {
+      margin: 5px;
+      padding: 8px 12px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .controls button:hover {
+      background: #45a049;
+    }
+    .status {
+      margin-top: 10px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <h3>Slider Disabled/Readonly Test</h3>
+    
+    <div>
+      <button onclick="toggleDisabled()">Toggle Disabled</button>
+      <button onclick="toggleReadonly()">Toggle Readonly</button>
+      <button onclick="testValueChange()">Try setValue(75)</button>
+      <button onclick="testIncrement()">Try Increment</button>
+    </div>
+    
+    <div class="status">
+      <div>Normal Slider Value: <span id="normalValue">50</span></div>
+      <div>Disabled Slider Value: <span id="disabledValue">30</span></div>
+      <div>Readonly Slider Value: <span id="readonlyValue">70</span></div>
+      <div>Test Slider - Disabled: <span id="testDisabled">false</span>, Readonly: <span id="testReadonly">false</span>, Value: <span id="testValue">50</span></div>
+    </div>
+  </div>
+
+  <a-scene background="color: #2c3e50">
+    <a-camera position="0 1.6 3" look-controls wasd-controls></a-camera>
+    
+    <!-- Normal slider for comparison -->
+    <a-slider 
+      id="normalSlider"
+      position="-2 2 0" 
+      min="0" 
+      max="100" 
+      value="50"
+      track-color="#C7B8FF"
+      active-track-color="#6730FF"
+      thumb-color="#6230FF">
+    </a-slider>
+    <a-text value="Normal Slider" position="-2 2.3 0" align="center" color="white"></a-text>
+    
+    <!-- Disabled slider -->
+    <a-slider 
+      id="disabledSlider"
+      position="0 2 0" 
+      min="0" 
+      max="100" 
+      value="30"
+      disabled="true"
+      track-color="#C7B8FF"
+      active-track-color="#6730FF"
+      thumb-color="#6230FF">
+    </a-slider>
+    <a-text value="Disabled Slider" position="0 2.3 0" align="center" color="white"></a-text>
+    
+    <!-- Readonly slider -->
+    <a-slider 
+      id="readonlySlider"
+      position="2 2 0" 
+      min="0" 
+      max="100" 
+      value="70"
+      readonly="true"
+      track-color="#C7B8FF"
+      active-track-color="#6730FF"
+      thumb-color="#6230FF">
+    </a-slider>
+    <a-text value="Readonly Slider" position="2 2.3 0" align="center" color="white"></a-text>
+    
+    <!-- Test slider for dynamic state changes -->
+    <a-slider 
+      id="testSlider"
+      position="0 0.5 0" 
+      min="0" 
+      max="100" 
+      value="50"
+      track-color="#C7B8FF"
+      active-track-color="#6730FF"
+      thumb-color="#6230FF">
+    </a-slider>
+    <a-text value="Test Slider (Dynamic States)" position="0 0.8 0" align="center" color="white"></a-text>
+    
+    <!-- Instructions -->
+    <a-text 
+      value="Test Instructions:\n1. Try clicking/interacting with each slider\n2. Normal slider should work normally\n3. Disabled slider should not respond and appear dimmed\n4. Readonly slider should focus but not change value\n5. Use buttons to test dynamic state changes\n6. Check tabIndex behavior with Tab key"
+      position="0 -0.5 0" 
+      align="center" 
+      color="white"
+      width="8">
+    </a-text>
+  </a-scene>
+
+  <script>
+    // Wait for A-Frame to initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      const normalSlider = document.getElementById('normalSlider');
+      const disabledSlider = document.getElementById('disabledSlider');
+      const readonlySlider = document.getElementById('readonlySlider');
+      const testSlider = document.getElementById('testSlider');
+      
+      // Update display values when sliders change
+      normalSlider.addEventListener('change', function(e) {
+        document.getElementById('normalValue').textContent = e.detail.value;
+      });
+      
+      disabledSlider.addEventListener('change', function(e) {
+        document.getElementById('disabledValue').textContent = e.detail.value;
+      });
+      
+      readonlySlider.addEventListener('change', function(e) {
+        document.getElementById('readonlyValue').textContent = e.detail.value;
+      });
+      
+      testSlider.addEventListener('change', function(e) {
+        document.getElementById('testValue').textContent = e.detail.value;
+      });
+      
+      // Test functions
+      window.toggleDisabled = function() {
+        const currentDisabled = testSlider.getAttribute('disabled') === 'true';
+        testSlider.setAttribute('disabled', !currentDisabled);
+        document.getElementById('testDisabled').textContent = !currentDisabled;
+        console.log('Toggled disabled to:', !currentDisabled);
+      };
+      
+      window.toggleReadonly = function() {
+        const currentReadonly = testSlider.getAttribute('readonly') === 'true';
+        testSlider.setAttribute('readonly', !currentReadonly);
+        document.getElementById('testReadonly').textContent = !currentReadonly;
+        console.log('Toggled readonly to:', !currentReadonly);
+      };
+      
+      window.testValueChange = function() {
+        console.log('Attempting to set value to 75...');
+        const oldValue = testSlider.getAttribute('value');
+        testSlider.components.slider.setValue(75);
+        const newValue = testSlider.getAttribute('value');
+        console.log('Value change result:', oldValue, '->', newValue);
+      };
+      
+      window.testIncrement = function() {
+        console.log('Attempting to increment...');
+        const oldValue = testSlider.getAttribute('value');
+        testSlider.components.slider.increment();
+        const newValue = testSlider.getAttribute('value');
+        console.log('Increment result:', oldValue, '->', newValue);
+      };
+      
+      // Test accessibility attributes
+      setTimeout(function() {
+        console.log('=== Accessibility Test Results ===');
+        
+        console.log('Normal slider attributes:');
+        console.log('- role:', normalSlider.getAttribute('role'));
+        console.log('- tabindex:', normalSlider.getAttribute('tabindex'));
+        console.log('- aria-disabled:', normalSlider.getAttribute('aria-disabled'));
+        
+        console.log('Disabled slider attributes:');
+        console.log('- role:', disabledSlider.getAttribute('role'));
+        console.log('- tabindex:', disabledSlider.getAttribute('tabindex'));
+        console.log('- aria-disabled:', disabledSlider.getAttribute('aria-disabled'));
+        
+        console.log('Readonly slider attributes:');
+        console.log('- role:', readonlySlider.getAttribute('role'));
+        console.log('- tabindex:', readonlySlider.getAttribute('tabindex'));
+        console.log('- aria-disabled:', readonlySlider.getAttribute('aria-disabled'));
+        console.log('- aria-readonly:', readonlySlider.getAttribute('aria-readonly'));
+        
+        // Test opacity changes
+        console.log('=== Visual State Test Results ===');
+        const normalTrack = normalSlider.querySelector('a-rounded');
+        const disabledTrack = disabledSlider.querySelector('a-rounded');
+        
+        if (normalTrack && disabledTrack) {
+          console.log('Normal slider track opacity:', normalTrack.getAttribute('opacity'));
+          console.log('Disabled slider track opacity:', disabledTrack.getAttribute('opacity'));
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

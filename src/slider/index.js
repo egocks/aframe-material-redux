@@ -38,7 +38,10 @@ AFRAME.registerComponent('slider', {
     soundEnabled: { type: 'boolean', default: true },
     sfxSlideStart: { type: 'string', default: '#aframeSliderStart' },
     sfxSlideEnd: { type: 'string', default: '#aframeSliderEnd' },
-    sfxTick: { type: 'string', default: '#aframeSliderTick' }
+    sfxTick: { type: 'string', default: '#aframeSliderTick' },
+
+    // Disabled state styling
+    disabledOpacity: { type: 'number', default: 0.4 }
   },
 
   init: function () {
@@ -254,6 +257,13 @@ AFRAME.registerComponent('slider', {
     this.blurHandler = FormControlHelpers.bindEvent(this, this.el, 'blur', function(event) {
       that.blur();
     });
+
+    // Keyboard navigation (will be implemented in task 7)
+    this.keydownHandler = FormControlHelpers.bindEvent(this, this.el, 'keydown', function(event) {
+      if (that.data.disabled) { return; }
+      if (that.data.readonly && that.isValueChangingKey(event)) { return; }
+      that.handleKeyboardInput(event);
+    });
   },
 
   handlePointerInteraction: function(event) {
@@ -285,6 +295,11 @@ AFRAME.registerComponent('slider', {
   },
 
   setValue: function(value) {
+    // Block value changes when disabled or readonly
+    if (this.data.disabled || this.data.readonly) {
+      return;
+    }
+
     // Convert to number and validate
     const numValue = parseFloat(value);
     if (isNaN(numValue)) {
@@ -305,6 +320,10 @@ AFRAME.registerComponent('slider', {
       this.state.valueNow = snappedValue;
       this.state.thumbX = this.valueToPosition(snappedValue);
       
+      // Update visuals for value-related changes
+      const changedProperties = new Set(['value']);
+      this.updateVisuals(changedProperties);
+      
       // Emit events
       Event.emit(this.el, 'input', { value: snappedValue });
       Event.emit(this.el, 'change', { value: snappedValue });
@@ -312,6 +331,11 @@ AFRAME.registerComponent('slider', {
   },
 
   increment: function(delta) {
+    // Block value changes when disabled or readonly
+    if (this.data.disabled || this.data.readonly) {
+      return;
+    }
+    
     // Placeholder for increment logic
     // Will be implemented in task 7
     const step = delta || this.data.step;
@@ -319,18 +343,45 @@ AFRAME.registerComponent('slider', {
   },
 
   decrement: function(delta) {
+    // Block value changes when disabled or readonly
+    if (this.data.disabled || this.data.readonly) {
+      return;
+    }
+    
     // Placeholder for decrement logic
     // Will be implemented in task 7
     const step = delta || this.data.step;
     this.setValue(this.data.value - step);
   },
 
+  isValueChangingKey: function(event) {
+    // Helper to identify keys that would change the value
+    const valueChangingKeys = [
+      'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+      'Home', 'End', 'PageUp', 'PageDown'
+    ];
+    return valueChangingKeys.includes(event.code);
+  },
+
+  handleKeyboardInput: function(event) {
+    // Placeholder for keyboard input handling
+    // Will be implemented in task 7
+  },
+
   update: function (oldData) {
+    // Determine which properties have changed for selective updates
+    const changedProperties = new Set();
+    for (const key in this.data) {
+      if (oldData[key] !== this.data[key]) {
+        changedProperties.add(key);
+      }
+    }
+
     // Update derived state
     this.updateDerivedState();
     
-    // Update visuals
-    this.updateVisuals();
+    // Update visuals with selective updates
+    this.updateVisuals(changedProperties);
     
     // Update accessibility
     this.updateAccessibility();
@@ -356,60 +407,156 @@ AFRAME.registerComponent('slider', {
     }
   },
 
-  updateVisuals: function() {
+  updateVisuals: function(changedProperties) {
+    // If no specific properties provided, update all
+    if (!changedProperties) {
+      changedProperties = new Set(Object.keys(this.data));
+    }
+
+    // Calculate effective opacity based on disabled state
+    const effectiveOpacity = this.data.disabled ? 
+      this.data.opacity * this.data.disabledOpacity : 
+      this.data.opacity;
+
     // Update track dimensions and colors
-    if (this.track) {
+    if (this.track && this.shouldUpdateTrack(changedProperties)) {
       this.track.setAttribute('width', this.data.width);
       this.track.setAttribute('height', this.data.trackHeight);
       this.track.setAttribute('radius', this.data.trackHeight / 2);
       this.track.setAttribute('color', this.data.trackColor);
-      this.track.setAttribute('opacity', this.data.opacity);
+      this.track.setAttribute('opacity', effectiveOpacity);
     }
 
-    // Update active track (will be fully implemented in task 4)
-    if (this.activeTrack) {
-      this.activeTrack.setAttribute('position', `${-this.data.width / 2} 0 0.002`);
+    // Update active track with proper width binding to current value
+    if (this.activeTrack && this.shouldUpdateActiveTrack(changedProperties)) {
+      // Calculate active track width based on current value position
+      const activeWidth = this.state.thumbX;
+      // Position active track so its left edge aligns with track's left edge
+      const activeTrackX = -this.data.width / 2 + (activeWidth / 2);
+      
+      this.activeTrack.setAttribute('position', `${activeTrackX} 0 0.002`);
+      this.activeTrack.setAttribute('width', Math.max(0, activeWidth));
       this.activeTrack.setAttribute('height', this.data.trackHeight);
       this.activeTrack.setAttribute('radius', this.data.trackHeight / 2);
       this.activeTrack.setAttribute('color', this.data.activeTrackColor);
-      this.activeTrack.setAttribute('opacity', this.data.opacity);
+      this.activeTrack.setAttribute('opacity', effectiveOpacity);
     }
 
     // Update thumb appearance and position
-    if (this.thumb) {
+    if (this.thumb && this.shouldUpdateThumb(changedProperties)) {
       const thumbX = -this.data.width / 2 + this.state.thumbX;
       this.thumb.setAttribute('position', `${thumbX} 0 0.004`);
       this.thumb.setAttribute('radius', this.data.thumbRadius);
       this.thumb.setAttribute('color', this.data.thumbColor);
-      this.thumb.setAttribute('opacity', this.data.opacity);
+      this.thumb.setAttribute('opacity', effectiveOpacity);
     }
 
     // Update focus ring to match thumb
-    if (this.focusRing) {
+    if (this.focusRing && this.shouldUpdateFocusRing(changedProperties)) {
       const thumbX = -this.data.width / 2 + this.state.thumbX;
       this.focusRing.setAttribute('position', `${thumbX} 0 0.004`);
       this.focusRing.setAttribute('radius-inner', this.data.thumbRadius + 0.01);
       this.focusRing.setAttribute('radius-outer', this.data.thumbRadius + 0.02);
       this.focusRing.setAttribute('color', this.data.focusRingColor);
-      this.focusRing.setAttribute('opacity', this.data.opacity);
+      this.focusRing.setAttribute('opacity', effectiveOpacity);
     }
 
     // Update value bubble position (content will be handled in task 10)
-    if (this.valueBubble) {
+    if (this.valueBubble && this.shouldUpdateValueBubble(changedProperties)) {
       const thumbX = -this.data.width / 2 + this.state.thumbX;
       this.valueBubble.setAttribute('position', `${thumbX} ${this.data.thumbRadius + 0.15} 0.005`);
     }
 
     // Update hitbox dimensions
-    if (this.hitbox) {
+    if (this.hitbox && this.shouldUpdateHitbox(changedProperties)) {
       this.hitbox.setAttribute('width', this.data.width + this.data.thumbRadius * 2);
       this.hitbox.setAttribute('height', Math.max(this.data.trackHeight, this.data.thumbRadius * 2) + 0.1);
     }
   },
 
+  // Selective update helpers - only update when relevant properties change
+  shouldUpdateTrack: function(changedProperties) {
+    return changedProperties.has('width') || 
+           changedProperties.has('trackHeight') || 
+           changedProperties.has('trackColor') || 
+           changedProperties.has('opacity') ||
+           changedProperties.has('disabled') ||
+           changedProperties.has('disabledOpacity');
+  },
+
+  shouldUpdateActiveTrack: function(changedProperties) {
+    return changedProperties.has('width') || 
+           changedProperties.has('trackHeight') || 
+           changedProperties.has('activeTrackColor') || 
+           changedProperties.has('opacity') ||
+           changedProperties.has('disabled') ||
+           changedProperties.has('disabledOpacity') ||
+           changedProperties.has('value') ||
+           changedProperties.has('min') ||
+           changedProperties.has('max');
+  },
+
+  shouldUpdateThumb: function(changedProperties) {
+    return changedProperties.has('thumbRadius') || 
+           changedProperties.has('thumbColor') || 
+           changedProperties.has('opacity') ||
+           changedProperties.has('disabled') ||
+           changedProperties.has('disabledOpacity') ||
+           changedProperties.has('value') ||
+           changedProperties.has('min') ||
+           changedProperties.has('max') ||
+           changedProperties.has('width');
+  },
+
+  shouldUpdateFocusRing: function(changedProperties) {
+    return changedProperties.has('thumbRadius') || 
+           changedProperties.has('focusRingColor') || 
+           changedProperties.has('opacity') ||
+           changedProperties.has('disabled') ||
+           changedProperties.has('disabledOpacity') ||
+           changedProperties.has('value') ||
+           changedProperties.has('min') ||
+           changedProperties.has('max') ||
+           changedProperties.has('width');
+  },
+
+  shouldUpdateValueBubble: function(changedProperties) {
+    return changedProperties.has('thumbRadius') ||
+           changedProperties.has('value') ||
+           changedProperties.has('min') ||
+           changedProperties.has('max') ||
+           changedProperties.has('width');
+  },
+
+  shouldUpdateHitbox: function(changedProperties) {
+    return changedProperties.has('width') || 
+           changedProperties.has('trackHeight') || 
+           changedProperties.has('thumbRadius');
+  },
+
   updateAccessibility: function() {
-    // Update ARIA attributes when properties change
-    FormControlHelpers.updateARIA(this);
+    // Set ARIA role and attributes for slider
+    this.el.setAttribute('role', 'slider');
+    this.el.setAttribute('aria-valuemin', this.data.min);
+    this.el.setAttribute('aria-valuemax', this.data.max);
+    this.el.setAttribute('aria-valuenow', this.state.valueNow);
+    this.el.setAttribute('aria-disabled', String(this.data.disabled));
+    
+    // Set tabIndex based on disabled state (Requirement 4.6)
+    const tabIndex = this.data.disabled ? -1 : (this.data.tabIndex || 0);
+    this.el.setAttribute('tabindex', tabIndex);
+    
+    // Apply aria-label if provided
+    if (this.data.ariaLabel) {
+      this.el.setAttribute('aria-label', this.data.ariaLabel);
+    }
+    
+    // Add readonly indication (not standard ARIA but useful for debugging)
+    if (this.data.readonly) {
+      this.el.setAttribute('aria-readonly', 'true');
+    } else {
+      this.el.removeAttribute('aria-readonly');
+    }
   },
 
   pause: function () {
@@ -497,6 +644,9 @@ AFRAME.registerPrimitive('a-slider', {
     'sound-enabled': 'slider.soundEnabled',
     'sfx-slide-start': 'slider.sfxSlideStart',
     'sfx-slide-end': 'slider.sfxSlideEnd',
-    'sfx-tick': 'slider.sfxTick'
+    'sfx-tick': 'slider.sfxTick',
+
+    // Disabled state mappings
+    'disabled-opacity': 'slider.disabledOpacity'
   }
 });

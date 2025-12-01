@@ -91,6 +91,21 @@
       </a-form>
       <!-- END INPUTS/KEYBOARD -->
 
+      <!-- BEGIN DATEPICKER DEMO -->
+      <a-datepicker
+        id="demoDatepicker"
+        position="1.2 1.2 -2.6"
+        width="1.4"
+        week-start="0"
+        locale="en-US"
+        bg-color="#FFFFFF"
+        grid-color="#E5E7EB"
+        day-text-color="#111827"
+        selection-fill="#2563EB"
+        month-text-color="#111827"
+      ></a-datepicker>
+      <!-- END DATEPICKER DEMO -->
+
       <!-- BEGIN FORM -->
       <a-rounded position="0.5 0.5 -2.5" width="4" height="3.1" radius="0.05" rotation="0 -20 0" scale="0.3 0.3 0.3">
         <a-form>
@@ -123,6 +138,17 @@
       button.addEventListener('click', ()=> {
         toast.show();
       });
+
+      // Datepicker demo event logging
+      const dp = document.querySelector('#demoDatepicker');
+      if (dp) {
+        dp.addEventListener('change', (e)=>{
+          console.log('[a-datepicker] change:', e.detail);
+        });
+        dp.addEventListener('invalid', (e)=>{
+          console.log('[a-datepicker] invalid:', e.detail);
+        });
+      }
     </script>
   </body>
 </html>

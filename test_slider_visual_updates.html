@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Slider Visual Updates Test</title>
+  <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+  <script src="./src/core/event.js"></script>
+  <script src="./src/utils.js"></script>
+  <script src="./src/core/form-control-helpers.js"></script>
+  <script src="./src/slider/index.js"></script>
+</head>
+<body>
+  <a-scene background="color: #222">
+    <a-camera position="0 1.6 3"></a-camera>
+    
+    <!-- Test slider with default values -->
+    <a-slider 
+      id="test-slider"
+      position="0 2 -2" 
+      value="25"
+      min="0" 
+      max="100"
+      width="2"
+      track-color="#C7B8FF"
+      active-track-color="#6730FF"
+      thumb-color="#6230FF">
+    </a-slider>
+
+    <!-- Test slider with different range -->
+    <a-slider 
+      id="test-slider-2"
+      position="0 1.5 -2" 
+      value="0.5"
+      min="0" 
+      max="1"
+      step="0.1"
+      width="1.5"
+      track-color="#FFB8C7"
+      active-track-color="#FF3067"
+      thumb-color="#FF2062">
+    </a-slider>
+
+    <!-- Test controls -->
+    <a-text 
+      position="0 2.5 -2" 
+      value="Slider Visual Updates Test" 
+      align="center"
+      color="white">
+    </a-text>
+    
+    <a-text 
+      position="0 1 -2" 
+      value="Press keys: 1=Set 50%, 2=Set 75%, 3=Change colors" 
+      align="center"
+      color="white"
+      scale="0.8 0.8 0.8">
+    </a-text>
+  </a-scene>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const slider1 = document.getElementById('test-slider');
+      const slider2 = document.getElementById('test-slider-2');
+      
+      // Test programmatic value changes
+      document.addEventListener('keydown', function(event) {
+        switch(event.key) {
+          case '1':
+            console.log('Setting slider 1 to 50%');
+            slider1.setAttribute('value', 50);
+            break;
+          case '2':
+            console.log('Setting slider 1 to 75%');
+            slider1.setAttribute('value', 75);
+            break;
+          case '3':
+            console.log('Changing colors');
+            slider1.setAttribute('track-color', '#FF8888');
+            slider1.setAttribute('active-track-color', '#FF0000');
+            slider1.setAttribute('thumb-color', '#AA0000');
+            break;
+          case '4':
+            console.log('Setting slider 2 to 0.8');
+            slider2.setAttribute('value', 0.8);
+            break;
+        }
+      });
+
+      // Log when sliders are ready
+      slider1.addEventListener('loaded', function() {
+        console.log('Slider 1 loaded with value:', slider1.getAttribute('value'));
+      });
+      
+      slider2.addEventListener('loaded', function() {
+        console.log('Slider 2 loaded with value:', slider2.getAttribute('value'));
+      });
+    });
+  </script>
+</body>
+</html>

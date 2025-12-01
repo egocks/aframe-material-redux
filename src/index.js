@@ -7,8 +7,9 @@
   require('./core/material-form-system');
   require("./keyboard");
   require("./input");
-  require("./textarea");
-  require("./switch");
+  require('./textarea');
+  require('./datepicker');
+  require('./switch');
   require("./form");
   require("./radio");
   require("./checkbox");
